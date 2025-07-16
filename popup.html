@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 420px;
+      height: 600px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      overflow: hidden;
+    }
+
+    .container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .header {
+      padding: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      background: linear-gradient(45deg, #fff, #e0e7ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.8;
+      font-weight: 300;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .scan-modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .scan-mode {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .scan-mode:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .scan-mode.active {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .scan-mode-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .scan-mode-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .scan-mode-desc {
+      font-size: 12px;
+      opacity: 0.8;
+      line-height: 1.3;
+    }
+
+    .camera-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      height: 200px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 150px;
+      height: 150px;
+      border: 3px solid #00ff88;
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .camera-overlay::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border: 3px solid rgba(0, 255, 136, 0.3);
+      border-radius: 20px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    .camera-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .camera-placeholder-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #00ff88, #00cc6a);
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .result-section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .result-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .result-count {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .result-content {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      min-height: 60px;
+      max-height: 120px;
+      overflow-y: auto;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-type {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .result-text {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .no-result {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-style: italic;
+      padding: 30px 20px;
+    }
+
+    .status-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      font-size: 12px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #00ff88;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .floating-action {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .floating-action:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 25px rgba(255, 107, 107, 0.6);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AI QR Scanner Pro</h1>
+      <p>Advanced scanning with AI intelligence</p>
+    </div>
+
+    <div class="main-content">
+      <div class="scan-modes">
+        <div class="scan-mode active" data-mode="standard">
+          <span class="scan-mode-icon">📱</span>
+          <div class="scan-mode-title">Standard</div>
+          <div class="scan-mode-desc">Regular QR codes</div>
+        </div>
+        <div class="scan-mode" data-mode="batch">
+          <span class="scan-mode-icon">📊</span>
+          <div class="scan-mode-title">Batch</div>
+          <div class="scan-mode-desc">Multiple codes</div>
+        </div>
+        <div class="scan-mode" data-mode="ai">
+          <span class="scan-mode-icon">🤖</span>
+          <div class="scan-mode-title">AI Enhanced</div>
+          <div class="scan-mode-desc">Smart detection</div>
+        </div>
+        <div class="scan-mode" data-mode="fullscreen">
+          <span class="scan-mode-icon">🖥️</span>
+          <div class="scan-mode-title">Full Screen</div>
+          <div class="scan-mode-desc">Large scanner</div>
+        </div>
+      </div>
+
+      <div class="camera-section">
+        <video id="video" autoplay muted playsinline style="display: none;"></video>
+        <div class="camera-overlay" id="overlay" style="display: none;"></div>
+        <div class="camera-placeholder" id="placeholder">
+          <span class="camera-placeholder-icon">📷</span>
+          <div>Click "Start Scanning" to begin</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="startBtn" class="btn btn-primary">
+          <span class="loading" id="loading" style="display: none;"></span>
+          Start Scanning
+        </button>
+        <button id="stopBtn" class="btn btn-secondary" style="display: none;">Stop</button>
+        <button id="historyBtn" class="btn btn-secondary">📋</button>
+      </div>
+
+      <div class="result-section">
+        <div class="result-header">
+          <div class="result-title">Scan Results</div>
+          <div class="result-count" id="resultCount">0 found</div>
+        </div>
+        <div class="result-content" id="resultContent">
+          <div class="no-result">No QR codes detected yet</div>
+        </div>
+        <div class="result-actions" id="resultActions" style="display: none;">
+          <button class="btn btn-small btn-primary" id="copyAllBtn">Copy All</button>
+          <button class="btn btn-small btn-secondary" id="exportBtn">Export</button>
+          <button class="btn btn-small btn-secondary" id="clearBtn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="floating-action" id="settingsBtn" title="Settings">⚙️</button>
+
+    <div class="status-bar" id="statusBar">
+      Ready to scan QR codes
+    </div>
+  </div>
+
+  <script src="qr-scanner.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

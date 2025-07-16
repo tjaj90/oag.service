@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI QR Scanner Pro - Full Screen</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+    
+    .scanner-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #video {
+      width: 80%;
+      max-width: 800px;
+      height: 60vh;
+      border-radius: 20px;
+      object-fit: cover;
+    }
+    
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      gap: 20px;
+    }
+    
+    button {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="scanner-container">
+    <h1>AI QR Scanner Pro - Full Screen Mode</h1>
+    <video id="video" autoplay muted playsinline></video>
+    <div class="controls">
+      <button id="startBtn" class="btn-primary">Start Scanning</button>
+      <button id="closeBtn" class="btn-danger">Close</button>
+    </div>
+    <div id="result" style="margin-top: 20px; display: none;"></div>
+  </div>
+
+  <script src="qr-scanner.min.js"></script>
+  <script>
+    // Full screen scanner implementation
+    document.getElementById('closeBtn').onclick = () => window.close()
+  </script>
+</body>
+</html>

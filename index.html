@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAG QR-Friendly - ระบบสแกนและสร้าง QR Code</title>
+    <meta name="description" content="OAG QRCode Friendly ระบบสแกนและสร้าง QR Code ที่ทันสมัย พัฒนาโดยส่วนเทคโนโลยีภาค สำนักงานอัยการภาค 9">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- QR Code Libraries - Multiple options for better compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Backup QR generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+    <!-- Advanced QR library -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+    <style>
+html {
+    scroll-behavior: smooth;
+}
+
+/* Ensure sections have proper spacing for navigation */
+section {
+    scroll-margin-top: 80px; /* Adjust based on navbar height */
+}
+
+/* Fix navbar positioning */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* Add top padding to body to account for fixed navbar */
+body {
+    padding-top: 80px; /* Adjust based on navbar height */
+}
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon"></span>
+                <div class="brand-info">
+                    <span class="brand-text">OAG QR-Friendly</span>
+                    <span class="brand-subtitle">สำนักงานอัยการภาค 9</span>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">
+                    <span class="nav-icon">🏠</span>
+                    <span>หน้าแรก</span>
+                </a>
+                
+                <a href="#scanner" class="nav-link">
+                    <span class="nav-icon">📷</span>
+                    <span>สแกน QR</span>
+                </a>
+                <a href="#generator" class="nav-link">
+                    <span class="nav-icon">🎨</span>
+                    <span>สร้าง QR</span>
+                </a>
+                <a href="#about" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    <span>เกี่ยวกับ</span>
+                </a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-logo">
+                    <div class="logo-container">
+                        <span class="logo-icon"></span>                        
+                    </div>
+                </div>
+                <h1 class="hero-title">
+                    <span class="title-line">QRCode Friendly</span><br>
+                    <span class="title-line gradient-text">ระบบสแกนและสร้าง QR Code</span>
+                </h1>
+                <p class="hero-subtitle">
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="startScanning()">
+                        <span class="btn-icon">📷</span>
+                        เริ่มสแกน QR Code
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('generator')">
+                        <span class="btn-icon">🎨</span>
+                        สร้าง QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <!-- Scanner Section -->
+    <section id="scanner" class="scanner-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-icon">📷</span>
+                    เครื่องสแกน QR Code
+                </h2>
+                <p class="section-subtitle">สแกน QR Code ด้วยกล้องของคุณ หรืออัพโหลดรูปภาพ</p>
+            </div>
+
+            <div class="scanner-container">
+                <div class="scanner-modes">
+                    <button class="mode-btn active" data-mode="camera">
+                        <span class="mode-icon">📷</span>
+                        <span class="mode-text">กล้อง</span>
+                        <span class="mode-desc">สแกนแบบ Real-time</span>
+                    </button>
+                    <button class="mode-btn" data-mode="upload">
+                        <span class="mode-icon">📁</span>
+                        <span class="mode-text">อัพโหลด</span>
+                        <span class="mode-desc">จากไฟล์รูปภาพ</span>
+                    </button>
+                </div>
+
+                <div class="scanner-area">
+                    <!-- Camera Scanner -->
+                    <div class="camera-scanner active" id="cameraScanner">
+                        <div class="camera-container">
+                            <video id="video" autoplay muted playsinline></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                            <div class="scanner-overlay">
+                                <div class="scan-frame">
+                                    <div class="corner corner-tl"></div>
+                                    <div class="corner corner-tr"></div>
+                                    <div class="corner corner-bl"></div>
+                                    <div class="corner corner-br"></div>
+                                    <div class="scan-line"></div>
+                                </div>
+                            </div>
+                            <div class="camera-placeholder" id="cameraPlaceholder">
+                                <div class="placeholder-icon">📷</div>
+                                <h3>เปิดกล้องเพื่อสแกน QR Code</h3>
+                                <p>กดปุ่ม "เริ่มสแกน" เพื่อเปิดกล้อง</p>
+                            </div>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="control-btn" id="startScanBtn">
+                                <span class="btn-icon">▶️</span>
+                                เริ่มสแกน
+                            </button>
+                            <button class="control-btn secondary" id="stopScanBtn" style="display: none;">
+                                <span class="btn-icon">⏹️</span>
+                                หยุดสแกน
+                            </button>
+                            <button class="control-btn secondary" id="switchCameraBtn" style="display: none;">
+                                <span class="btn-icon">🔄</span>
+                                เปลี่ยนกล้อง
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Scanner -->
+                    <div class="upload-scanner" id="uploadScanner">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <div class="upload-icon">📁</div>
+                                <h3>อัพโหลดรูปภาพ QR Code</h3>
+                                <p>ลากและวางไฟล์ หรือคลิกเพื่อเลือกไฟล์</p>
+                                <input type="file" id="fileInput" accept="image/*" hidden>
+                                <button class="btn btn-primary" id="uploadBtn">
+                                    <span class="btn-icon">📁</span>
+                                    เลือกไฟล์
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="scan-results" id="scanResults" style="display: none;">
+                    <div class="results-header">
+                        <h3>
+                            <span class="results-icon">✅</span>
+                            ผลการสแกน
+                        </h3>
+                        <button class="close-btn" onclick="clearResults()">✕</button>
+                    </div>
+                    <div class="results-content" id="resultsContent"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR Generator Section - Enhanced -->
+    <section id="generator" class="generator-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-icon">🎨</span>
+                    เครื่องสร้าง QR Code
+                </h2>
+                <p class="section-subtitle">สำหรับข้อความ URL หรือข้อมูลต่างๆ พร้อมการปรับแต่งขั้นสูง</p>
+            </div>
+
+            <div class="generator-container">
+                <div class="generator-form">
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <center><span class="section-icon">📝</span>
+                            ข้อมูล QR Code
+                            </center>
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="qrType">
+                                <span class="label-icon">🏷️</span>
+                                ประเภท 
+                            </label>
+                            <select id="qrType" class="form-control">
+                                <option value="text">📝 ข้อความ</option>
+                                <option value="url">🌐 URL/เว็บไซต์</option>
+                                <option value="email">📧 อีเมล</option>
+                                <option value="phone">📞 เบอร์โทรศัพท์</option>
+                                <option value="sms">💬 SMS</option>
+                                <option value="wifi">📶 Wi-Fi</option>
+                                <option value="vcard">👤 ข้อมูลติดต่อ (vCard)</option>
+                                <option value="location">📍 ตำแหน่งที่อยู่</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qrContent">
+                                <span class="label-icon">✏️</span>
+                                เนื้อหา
+                            </label>
+                            <textarea id="qrContent" class="form-control" placeholder="ใส่เนื้อหาที่ต้องการสร้าง QR Code" rows="4"></textarea>
+                            <div class="content-templates" id="contentTemplates" style="display: none;">
+                                <!-- Templates จะถูกแสดงตามประเภทที่เลือก -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <center><span class="section-icon">⚙️</span>
+                            การตั้งค่า
+                            </center>
+                        </h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="qrSize">
+                                    <span class="label-icon">📏</span>
+                                    ขนาด
+                                </label>
+                                <select id="qrSize" class="form-control">
+                                    <option value="200">200x200 px</option>
+                                    <option value="300" selected>300x300 px</option>
+                                    <option value="400">400x400 px</option>
+                                    <option value="500">500x500 px</option>
+                                    <option value="800">800x800 px</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="qrErrorLevel">
+                                    <span class="label-icon">🛡️</span>
+                                    ระดับการแก้ไขข้อผิดพลาด
+                                </label>
+                                <select id="qrErrorLevel" class="form-control">
+                                    <option value="L">L - ต่ำ (7%)</option>
+                                    <option value="M" selected>M - กลาง (15%)</option>
+                                    <option value="Q">Q - สูง (25%)</option>
+                                    <option value="H">H - สูงสุด (30%)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="qrForeground">
+                                    <span class="label-icon">🎨</span>
+                                    สีพื้นหน้า
+                                </label>
+                                <input type="color" id="qrForeground" class="form-control color-input" value="#000000">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="qrBackground">
+                                    <span class="label-icon">🎨</span>
+                                    สีพื้นหลัง
+                                </label>
+                                <input type="color" id="qrBackground" class="form-control color-input" value="#ffffff">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qrStyle">
+                                <span class="label-icon">✨</span>
+                                รูปแบบ QR Code
+                            </label>
+                            <select id="qrStyle" class="form-control">
+                                <option value="square">⬛ สี่เหลี่ยม (มาตรฐาน)</option>
+                                <option value="dots">⚫ จุดกลม</option>
+                                <option value="rounded">🔘 มุมโค้ง</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="qrLogo">
+                                <span class="checkmark"></span>
+                                <span class="label-icon">🖼️</span>
+                                เพิ่มโลโก้ตรงกลาง
+                            </label>
+                            <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="generateQR()">
+                            <span class="btn-icon">⚡</span>
+                            สร้าง QR Code
+                        </button>
+
+                        <button class="btn btn-secondary" onclick="resetGenerator()" style="margin-left: 10px;">
+                            <span class="btn-icon">🔄</span>
+                            รีเซ็ต
+                        </button>
+                    </div>
+                </div>
+
+                <div class="generator-preview">
+                    <div class="preview-header">
+                        <h3>
+                            <span class="preview-icon">👁️</span>
+                            ตัวอย่าง QR Code
+                        </h3>
+                    </div>
+                    
+                    <div class="preview-container" id="qrPreview">
+                        <div class="preview-placeholder">
+                            <div class="placeholder-icon">📱</div>
+                            <p>QR Code จะแสดงที่นี่</p>
+                        </div>
+                    </div>
+                    
+                    <div class="qr-info" id="qrInfo" style="display: none;">
+                        <div class="info-item">
+                            <span class="info-icon">📏</span>
+                            <span class="info-label">ขนาด:</span>
+                            <span class="info-value" id="qrSizeInfo">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">🏷️</span>
+                            <span class="info-label">ประเภท:</span>
+                            <span class="info-value" id="qrTypeInfo">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon">📊</span>
+                            <span class="info-label">ความยาวข้อมูล:</span>
+                            <span class="info-value" id="qrDataLength">--</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-actions" id="previewActions" style="display: none;">
+                        <button class="btn btn-secondary" onclick="downloadQR()">
+                            <span class="btn-icon">💾</span>
+                            ดาวน์โหลด PNG
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadQRSVG()">
+                            <span class="btn-icon">📄</span>
+                            ดาวน์โหลด SVG
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyQR()">
+                            <span class="btn-icon">📋</span>
+                            คัดลอก
+                        </button>
+                        <button class="btn btn-secondary" onclick="shareQR()">
+                            <span class="btn-icon">📤</span>
+                            แชร์
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-icon">ℹ️</span>
+                    เกี่ยวกับ OAG QR-Friendly
+                </h2>
+                <p class="section-subtitle">ระบบที่พัฒนาขึ้นเพื่อความสะดวกในการทำงานและบริการประชาชน</p>
+            </div>
+
+            <!-- Developer Info -->
+            <div class="developer-info">
+                
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>วัตถุประสงค์</h3>
+                    <p>พัฒนาระบบสแกนและสร้าง QR Code ที่มีประสิทธิภาพสูง เพื่อใช้ในการทำงานของสำนักงานอัยการและการให้บริการประชาชนอย่างสะดวกรวดเร็ว</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">🔧</div>
+                    <h3>เทคโนโลยี</h3>
+                    <p>ใช้เทคโนโลยีเว็บแอปพลิเคชันที่ทันสมัย รองรับการทำงานบนทุกอุปกรณ์ พร้อมระบบความปลอดภัยระดับสูงและการประมวลผลที่รวดเร็ว</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">🛡️</div>
+                    <h3>ความปลอดภัย</h3>
+                    <p>ระบบไม่เก็บข้อมูลส่วนตัวของผู้ใช้ การประมวลผลทำงานบนเครื่องผู้ใช้เท่านั้น รับประกันความเป็นส่วนตัวและความปลอดภัยของข้อมูล</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">📱</div>
+                    <h3>การใช้งาน</h3>
+                    <p>ออกแบบให้ใช้งานง่าย รองรับทุกอุปกรณ์ ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์ ไม่ต้องติดตั้งแอปพลิเคชันเพิ่มเติม</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">🌟</div>
+                    <h3>คุณสมบัติเด่น</h3>
+                    <p>สแกน QR Code แบบ Real-time สร้าง QR Code หลากหลายรูปแบบ ปรับแต่งสีและรูปแบบได้ รองรับการเพิ่มโลโก้ และดาวน์โหลดหลายรูปแบบ</p>
+                </div>
+
+                <div class="about-card">
+                    <div class="card-icon">🎓</div>
+                    <h3>การพัฒนา</h3>
+                    <p>พัฒนาด้วยมาตรฐานสากล ใช้ภาษาไทยในการแสดงผล เพื่อความเข้าใจที่ง่ายและการใช้งานที่สะดวกสำหรับผู้ใช้ชาวไทย</p>
+                </div>
+            </div>
+
+           
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="brand-icon"></span>
+                    <div class="brand-info">
+                        <span class="brand-text">OAG QR-Friendly</span>
+                        <span class="brand-subtitle">สำนักงานอัยการภาค 9</span>
+                    </div>
+                </div>               
+                <div class="footer-info">
+                    <p><strong>พัฒนาโดย ส่วนเทคโนโลยีภาค สำนักงานอัยการภาค 9</strong></p>
+                    <p>&copy; 2024 สงวนลิขสิทธิ์</p>                    
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+// Fix navigation scrolling
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href').substring(1);
+            const targetSection = document.getElementById(targetId);
+            
+            if (targetSection) {
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Calculate offset for fixed navbar
+                const navHeight = document.querySelector('.navbar').offsetHeight;
+                const targetPosition = targetSection.offsetTop - navHeight;
+                
+                // Smooth scroll to target
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+
+// Global function for button clicks
+function scrollToSection(sectionId) {
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        const navHeight = document.querySelector('.navbar').offsetHeight;
+        const targetPosition = targetSection.offsetTop - navHeight;
+        
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
+}
+
+function startScanning() {
+    scrollToSection('scanner');
+    // Additional scanner logic will be handled by script.js
+}
+</script>
+<script src="script.js"></script>
+</body>
+</html>

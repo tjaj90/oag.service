@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V8 Performance Monitor - QR Scanner</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff8f0 0%, #ffeee0 100%);
+        }
+        .monitor-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.1);
+            border: 1px solid rgba(255, 140, 66, 0.2);
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .metric-value {
+            color: #ff8c42;
+            font-weight: 700;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-good { background: #52c41a; }
+        .status-warning { background: #faad14; }
+        .status-error { background: #ff4d4f; }
+        .chart-container {
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .feature-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .feature-supported {
+            background: #e8f5e8;
+            color: #52c41a;
+        }
+        .feature-not-supported {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #ff8c42;">🚀 V8 Performance Monitor</h1>
+    
+    <div class="monitor-card">
+        <h2>📊 Real-time Performance Metrics</h2>
+        <div id="performanceMetrics">
+            <div class="metric">
+                <span class="metric-label">Average Scan Time</span>
+                <span class="metric-value" id="avgScanTime">-- ms</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Total Scans</span>
+                <span class="metric-value" id="totalScans">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Memory Usage</span>
+                <span class="metric-value" id="memoryUsage">-- MB</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">V8 Engine Status</span>
+                <span class="metric-value">
+                    <span class="status-indicator status-good"></span>
+                    <span id="v8Status">Optimized</span>
+                </span>
+            </div>
+        </div>
+        <div class="chart-container" id="performanceChart">
+            📈 Performance Chart (Real-time updates)
+        </div>
+    </div>
+
+    <div class="monitor-card">
+        <h2>🔧 V8 Engine Features</h2>
+        <div class="feature-list" id="v8Features">
+            <!-- Features จะถูกเพิ่มด้วย JavaScript -->
+        </div>
+    </div>
+
+    <div class="monitor-card">
+        <h2>🌐 CDN Status</h2>
+        <div id="cdnStatus">
+            <div class="metric">
+                <span class="metric-label">jsQR Library</span>
+                <span class="metric-value" id="jsqrStatus">Loading...</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">QRCode.js Library</span>
+                <span class="metric-value" id="qrcodeStatus">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="monitor-card">
+        <h2>💾 Cache Information</h2>
+        <div id="cacheInfo">
+            <div class="metric">
+                <span class="metric-label">Service Worker</span>
+                <span class="metric-value" id="swStatus">Checking...</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Cached Resources</span>
+                <span class="metric-value" id="cachedResources">--</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PerformanceMonitor {
+            constructor() {
+                this.metrics = {
+                    scanTimes: [],
+                    totalScans: 0,
+                    memoryUsage: 0
+                };
+                this.init();
+            }
+
+            init() {
+                this.checkV8Features();
+                this.checkCDNStatus();
+                this.checkServiceWorker();
+                this.startMonitoring();
+            }
+
+            checkV8Features() {
+                const features = {
+                    'WebAssembly': typeof WebAssembly !== 'undefined',
+                    'SIMD': this.checkSIMDSupport(),
+                    'SharedArrayBuffer': typeof SharedArrayBuffer !== 'undefined',
+                    'BigInt': typeof BigInt !== 'undefined',
+                    'WeakRef': typeof WeakRef !== 'undefined',
+                    'FinalizationRegistry': typeof FinalizationRegistry !== 'undefined'
+                };
+
+                const container = document.getElementById('v8Features');
+                Object.entries(features).forEach(([feature, supported]) => {
+                    const div = document.createElement('div');
+                    div.className = `feature-item ${supported ? 'feature-supported' : 'feature-not-supported'}`;
+                    div.innerHTML = `
+                        <strong>${feature}</strong><br>
+                        ${supported ? '✅ Supported' : '❌ Not Supported'}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            checkSIMDSupport() {
+                try {
+                    if (typeof WebAssembly !== 'undefined' && WebAssembly.validate) {
+                        const simdTest = new Uint8Array([
+                            0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+                            0x01, 0x04, 0x01, 0x60, 0x00, 0x00, 0x03, 0x02,
+                            0x01, 0x00, 0x0a, 0x09, 0x01, 0x07, 0x00, 0xfd,
+                            0x0c, 0x00, 0x00, 0x0b
+                        ]);
+                        return WebAssembly.validate(simdTest);
+                    }
+                } catch (e) {}
+                return false;
+            }
+
+            checkCDNStatus() {
+                // Check jsQR
+                const jsqrScript = document.createElement('script');
+                jsqrScript.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+                jsqrScript.onload = () => {
+                    document.getElementById('jsqrStatus').innerHTML = 
+                        '<span class="status-indicator status-good"></span>Loaded';
+                };
+                jsqrScript.onerror = () => {
+                    document.getElementById('jsqrStatus').innerHTML = 
+                        '<span class="status-indicator status-error"></span>Failed';
+                };
+                document.head.appendChild(jsqrScript);
+
+                // Check QRCode.js
+                const qrcodeScript = document.createElement('script');
+                qrcodeScript.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                qrcodeScript.onload = () => {
+                    document.getElementById('qrcodeStatus').innerHTML = 
+                        '<span class="status-indicator status-good"></span>Loaded';
+                };
+                qrcodeScript.onerror = () => {
+                    document.getElementById('qrcodeStatus').innerHTML = 
+                        '<span class="status-indicator status-error"></span>Failed';
+                };
+                document.head.appendChild(qrcodeScript);
+            }
+
+            checkServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then((registration) => {
+                        document.getElementById('swStatus').innerHTML = 
+                            '<span class="status-indicator status-good"></span>Active';
+                        
+                        // Check cached resources
+                        caches.keys().then((cacheNames) => {
+                            let totalCached = 0;
+                            const promises = cacheNames.map(cacheName => 
+                                caches.open(cacheName).then(cache => 
+                                    cache.keys().then(keys => keys.length)
+                                )
+                            );
+                            
+                            Promise.all(promises).then(counts => {
+                                totalCached = counts.reduce((sum, count) => sum + count, 0);
+                                document.getElementById('cachedResources').textContent = totalCached;
+                            });
+                        });
+                    }).catch(() => {
+                        document.getElementById('swStatus').innerHTML = 
+                            '<span class="status-indicator status-error"></span>Not Available';
+                    });
+                } else {
+                    document.getElementById('swStatus').innerHTML = 
+                        '<span class="status-indicator status-error"></span>Not Supported';
+                }
+            }
+
+            startMonitoring() {
+                setInterval(() => {
+                    this.updateMemoryUsage();
+                    this.updatePerformanceMetrics();
+                }, 1000);
+            }
+
+            updateMemoryUsage() {
+                if (performance.memory) {
+                    const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                    document.getElementById('memoryUsage').textContent = `${memoryMB} MB`;
+                }
+            }
+
+            updatePerformanceMetrics() {
+                // Simulate receiving metrics from main app
+                if (window.qrApp && window.qrApp.performanceMetrics) {
+                    const metrics = window.qrApp.performanceMetrics;
+                    document.getElementById('avgScanTime').textContent = 
+                        `${metrics.averageScanTime.toFixed(2)} ms`;
+                    document.getElementById('totalScans').textContent = metrics.totalScans;
+                }
+            }
+        }
+
+        // Initialize monitor
+        document.addEventListener('DOMContentLoaded', () => {
+            new PerformanceMonitor();
+        });
+    </script>
+</body>
+</html>
